@@ -17,8 +17,8 @@ mc_foot_x = 19-len_foot*cen_foot; % 19はつま先からくるぶしまでの距
 mc_foot_y = 0;
 mc_low_x = 0;
 mc_low_y = len_low*(1-cen_low);
-mc_femur_x = 0;
-mc_femur_y = len_low + len_femur*(1-cen_femur);
+% mc_femur_x = 0;
+% mc_femur_y = len_low + len_femur*(1-cen_femur); この2ついらないかも
 % 問題点：原点をどこにするか
 
 %% 関節の可動域
