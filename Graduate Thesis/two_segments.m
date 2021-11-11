@@ -11,7 +11,7 @@ mc_foot_x = 19-len_foot*cen_foot; %% 19はつま先からくるぶしまでの�
 mc_foot_y = 0; 
 mc_low_y = len_low*(1-cen_low);
 %% 足関節の可動域
-theta_ank = 1:1:30;
+theta_ank = 0:0.01:pi/6;
 %% 足関節角度に対する下腿の質量中心の座標
 g_low = zeros(length(theta_ank),2);
 for i = 1:length(theta_ank)
@@ -31,4 +31,16 @@ end
 for j = 1:length(theta_ank)
     y_g = (m_foot*mc_foot_y + m_low*g_low(j,2))/(m_foot+m_low);
     g(j,2) = y_g;
+end
+%% 重心が足関節内にあるかの判定
+squat = zeros(length(theta_ank),2);
+for k = 1:length(theta_ank)
+    if g(k,1) < 19 && g(k,1) > -6.5
+        squat(k,:) = g(k,:);
+    end
+end
+for k = 1:length(theta_ank)
+    if g(k,:) == [0 0]
+        g(k,:) = [];
+    end
 end
