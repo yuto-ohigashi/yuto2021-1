@@ -28,11 +28,11 @@ theta_knee = pi/2:0.01:23/18*pi;
 
 %% 各関節角度に対する各セグメントの質量中心の座標
 g_low_femur = zeros(length(theta_ank)*length(theta_knee),6);
+col = 0;
 % gは順番に(足関節角度 膝関節角度 下腿の質量中心のx座標 下腿の質量中心のy座標 大腿の質量中心のx座標 大腿の質量中心のy座標)
 for i = 1:length(theta_ank)
     x_low = mc_low * sin(theta_ank(i)); %下腿の質量中心のx座標を(下腿の長さ)*sinθで計算
     y_low = mc_low * cos(theta_ank(i)); %下腿の質量中心のy座標を(下腿の長さ)*cosθで計算
-    col = length(theta_knee)*(i-1);
     for j = 1:length(theta_knee)
         x_femur = len_low*cos(theta_ank(i)) + mc_femur*cos(theta_knee(j));
         y_femur = len_low*sin(theta_ank(i)) + mc_femur*sin(theta_knee(j));
@@ -46,7 +46,7 @@ g = zeros(length(theta_ank)*length(theta_knee),4);
 % gは順番に(足関節角度 膝関節角度 重心のx座標 重心のy座標)
 for k = 1:length(theta_ank)*length(theta_knee)
     x_g = (m_foot*mc_foot_x + m_low*g_low_femur(k,3) + m_femur*g_low_femur(k,5))/(m_foot+m_low+m_femur);
-    y_g = (m_foot*mc_foot_x + m_low*g_low_femur(k,4) + m_femur*g_low_femur(k,6))/(m_foot+m_low+m_femur);
+    y_g = (m_foot*mc_foot_y + m_low*g_low_femur(k,4) + m_femur*g_low_femur(k,6))/(m_foot+m_low+m_femur);
     g(k,:) = [g_low_femur(k,1) g_low_femur(k,2) x_g y_g];
 end 
 
@@ -59,7 +59,7 @@ for l = 1:length(theta_ank)*length(theta_knee)
     end
 end
 for l = 1:length(theta_ank)*length(theta_knee)
-    if squat_position(l,3:4) == [0 0]
+    if squat_position(l,3) == 0 && squat_position(l,4) ==0
         squat_position(l,:) = [];
     end
 end

@@ -48,7 +48,7 @@ for k = 1:length(theta_ank)
     end
 end
 for k = 1:length(theta_ank)
-    if squat_position(k,2:3) == [0 0]
+    if squat_position(k,2) == 0 && squat_position(k,3) ==0
         squat_position(k,:) = [];
     end
 end

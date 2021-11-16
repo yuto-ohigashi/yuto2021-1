@@ -15,12 +15,12 @@ m_upper = 69.6*60.7/100; %頭部・胴体・上腕・前腕・手
 len_foot = 25.5;
 len_low = 47.0;
 len_femur = 41.0;
-len_upperarm = ;
-len_forearm = ;
-len_hand = ;
-len_head = ;
-len_body = ;
-len_upper = ;
+len_upperarm = 31.0;
+len_forearm = 23.4;
+len_hand = 19.6;
+len_head = 25.0;
+len_body = 52.5;
+len_upper = len_head+len_body;
 % 問題点：セグメントの長さの決定をどうするか
 
 %% 各セグメントの質量中心(直立時の距骨と脛骨の接合部(くるぶし？自分の長さ)を原点Oとした座標)、質量中心(cf,cl,cfe)の位置は上端からの比
@@ -55,4 +55,50 @@ mc_arm = (m_upperarm*mc_upperarm + m_forearm*(len_upperarm+mc_forearm) + m_hand*
 mc_upper = len_upper - (m_head*mc_head + m_body*(len_head+mc_body) - m_arm*(len_head+mc_arm))/(m_head+m_body+m_arm); 
 %頭を原点にした方向が正、胴体と腕の質量中心までの距離は頭の長さを足している
 
+%% 関節の可動域
+% 関節角度は水平線からセグメントまでの角度
+theta_ank = 7/18*pi:0.01:pi/2;
+theta_knee = pi/2:0.01:23/18*pi;
+theta_hip = -7/36*pi:0.01:pi/2;
 
+%% 各関節角度に対する各セグメントの質量中心の座標
+g_all = zeros(length(theta_ank)*length(theta_knee)*length(theta_hip),9);
+col = 0;
+% gは順番に(足関節角度 膝関節角度 股関節角度 下腿の質量中心のx座標 下腿の質量中心のy座標 大腿の質量中心のx座標 大腿の質量中心のy座標 上体の質量中心のx座標 上体の質量中心のy座標)
+for i = 1:length(theta_ank)
+    x_low = mc_low * sin(theta_ank(i)); %下腿の質量中心のx座標を(下腿の長さ)*sinθで計算
+    y_low = mc_low * cos(theta_ank(i)); %下腿の質量中心のy座標を(下腿の長さ)*cosθで計算
+    for j = 1:length(theta_knee)
+        x_femur = len_low*cos(theta_ank(i)) + mc_femur*cos(theta_knee(j));
+        y_femur = len_low*sin(theta_ank(i)) + mc_femur*sin(theta_knee(j));
+        for k = 1:length(theta_hip)
+            x_upper = len_low*cos(theta_ank(i)) + len_femur*cos(theta_knee(j))+ mc_upper*cos(theta_hip(k));
+            y_upper = len_low*sin(theta_ank(i)) + len_femur*sin(theta_knee(j))+ mc_upper*sin(theta_hip(k));
+            col = col+1;
+            g_all(col,:) = [theta_ank(i) theta_knee(j) theta_hip(k) x_low y_low x_femur y_femur x_upper y_upper];
+        end
+    end
+end
+
+%% 各関節角度に対する重心座標
+g = zeros(length(theta_ank)*length(theta_knee)*length(theta_hip),5);
+% gは順番に(足関節角度 膝関節角度 股関節角度 重心のx座標 重心のy座標)
+for l = 1:length(theta_ank)*length(theta_knee)*length(theta_hip)
+    x_g = (m_foot*mc_foot_x + m_low*g_all(l,4) + m_femur*g_all(l,6) + m_upper*g_all(l,8))/(m_foot+m_low+m_femur+m_upper);
+    y_g = (m_foot*mc_foot_y + m_low*g_all(l,5) + m_femur*g_all(l,7) + m_upper*g_all(l,9))/(m_foot+m_low+m_femur+m_upper);
+    g(l,:) = [g_all(l,1) g_all(l,2) g_all(l,3) x_g y_g];
+end 
+
+%% 重心が足関節内にあるかの判定
+squat_position = zeros(length(theta_ank)*length(theta_knee)*length(theta_hip),5);
+% squat_positionは順番に(足関節角度 膝関節角度 股関節角度 重心のx座標 重心のy座標)
+for m = 1:length(theta_ank)*length(theta_knee)*length(theta_hip)
+    if g(m,4) < 19 && g(m,3) > -6.5
+        squat_position(m,:) = g(m,:);
+    end
+end
+for m = 1:length(theta_ank)*length(theta_knee)
+    if squat_position(m,4) == 0 && squat_position(m,5) == 0
+        squat_position(m,:) = [];
+    end
+end
