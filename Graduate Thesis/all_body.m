@@ -23,7 +23,7 @@ len_body = 52.5;
 len_upper = len_head+len_body;
 % 問題点：セグメントの長さの決定をどうするか
 
-%% 各セグメントの質量中心(直立時の距骨と脛骨の接合部(くるぶし？自分の長さ)を原点Oとした座標)、質量中心(cf,cl,cfe)の位置は上端からの比
+%% 各セグメントの質量中心(直立時の距骨と脛骨の接合部(くるぶし？自分の長さ)を原点Oとした座標)、質量中心の位置は上端からの比
 cen_foot = 0.595;
 cen_low = 0.406;
 cen_femur = 0.475;
@@ -45,21 +45,22 @@ mc_head = len_head*cen_head; %上端から質量中心までの距離
 mc_body = len_body*cen_body; %上端から質量中心までの距離
 % 問題点：原点をどこにするか
 
-%% 上半身の質量中心までの距離
+%% 上半身の足から質量中心までの距離
 %上半身の質量中心では以下の仮定を置く
 %・腕の各セグメントの質量中心は一直線状にある
 %・腕の質量中心が腕は左右対称と考えて胴体の中心線上に質量中心がある
 %・頭・腕・胴の質量中心が一直線状にある
+%→腕の質量中心を出してから、頭と腕と胴の重心を出して腰からそこまでの距離を出す
+%以下は腕の質量中心、肩からの距離にしている
 mc_arm = (m_upperarm*mc_upperarm + m_forearm*(len_upperarm+mc_forearm) + m_hand*(len_upperarm+len_forearm+cen_hand))/m_arm;  
-%肩からの距離にしている
+%頭を原点に下方向が正で重心を出している、胴体と腕の質量中心までの距離は(肩から質量中心までの距離)+(頭の長さ)で出している
 mc_upper = len_upper - (m_head*mc_head + m_body*(len_head+mc_body) - m_arm*(len_head+mc_arm))/(m_head+m_body+m_arm); 
-%頭を原点にした方向が正、胴体と腕の質量中心までの距離は頭の長さを足している
 
 %% 関節の可動域
 % 関節角度は水平線からセグメントまでの角度
-theta_ank = 7/18*pi:0.01:pi/2;
-theta_knee = pi/2:0.01:23/18*pi;
-theta_hip = -7/36*pi:0.01:pi/2;
+theta_ank = 7/18*pi:1/180*pi:pi/2;
+theta_knee = pi/2:1/180*pi:23/18*pi;
+theta_hip = -7/36*pi:1/180*pi:pi/2;
 
 %% 各関節角度に対する各セグメントの質量中心の座標
 g_all = zeros(length(theta_ank)*length(theta_knee)*length(theta_hip),9);
@@ -93,11 +94,11 @@ end
 squat_position = zeros(length(theta_ank)*length(theta_knee)*length(theta_hip),5);
 % squat_positionは順番に(足関節角度 膝関節角度 股関節角度 重心のx座標 重心のy座標)
 for m = 1:length(theta_ank)*length(theta_knee)*length(theta_hip)
-    if g(m,4) < 19 && g(m,3) > -6.5
+    if g(m,4) < 19 && g(m,4) > -6.5 && g(m,5)> 0
         squat_position(m,:) = g(m,:);
     end
 end
-for m = 1:length(theta_ank)*length(theta_knee)
+for m = 1:length(theta_ank)*length(theta_knee)*length(theta_hip)
     if squat_position(m,4) == 0 && squat_position(m,5) == 0
         squat_position(m,:) = [];
     end
