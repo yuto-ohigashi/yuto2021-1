@@ -106,13 +106,24 @@ end
 sz = size(squat_position);
 squat_plot_x = zeros(sz(1),6);
 squat_plot_y = zeros(sz(1),6);
-% squat_plotは順番に(かかとx かかとy つま先x つま先y　足関節x 足関節y　膝関節x 膝関節y　股関節x 股関節y 頭x 頭y)
+% squat_plotは順番に(かかと　つま先　足関節　膝関節　股関節　頭)
 for n = 1:sz(1)
     knee = [len_low*cos(squat_position(n,1)/180*pi) len_low*sin(squat_position(n,1)/180*pi)];
     hip = [knee(1,1)+len_femur*cos(squat_position(n,2)/180*pi) knee(1,2)+len_femur*sin(squat_position(n,2)/180*pi)];
-    head = [hip(1,1)+len_upper*cos(squat_position(n,3)/180*pi) hip(1,2)+len_upper*cos(squat_position(n,3)/180*pi)];
-    squat_plot_x(n,:) = [-6.5 19 0 knee(1,1) hip(1,1) head(1,1)]';
-    squat_plot_y(n,:) = [0 0 0 knee(1,2) hip(1,2) head(1,2)]';
+    head = [hip(1,1)+len_upper*cos(squat_position(n,3)/180*pi) hip(1,2)+len_upper*sin(squat_position(n,3)/180*pi)];
+    squat_plot_x(n,:) = [-6.5 19 0 knee(1,1) hip(1,1) head(1,1)];
+    squat_plot_y(n,:) = [0 0 0 knee(1,2) hip(1,2) head(1,2)];
 end
 
 %% プロット
+for o = 1:sz(1)
+    figure(1)
+    hold on
+    plot([squat_plot_x(o,1) squat_plot_x(o,2)], [squat_plot_y(o,1) squat_plot_y(o,2)], '-ok');
+    plot([squat_plot_x(o,3) squat_plot_x(o,4)], [squat_plot_y(o,3) squat_plot_y(o,4)],'-ok');
+    plot([squat_plot_x(o,4) squat_plot_x(o,5)], [squat_plot_y(o,4) squat_plot_y(o,5)],'-ok');
+    plot([squat_plot_x(o,5) squat_plot_x(o,6)], [squat_plot_y(o,5) squat_plot_y(o,6)],'-ok');
+    %filename = join(string([squat_position(1,1:3)]),'_');
+    %saveas(gcf, 'filename');
+    %hold off
+end
