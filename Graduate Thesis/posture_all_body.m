@@ -9,7 +9,6 @@ m_arm = m_upperarm+m_forearm+m_hand;
 m_head = 69.6*6.9/100;
 m_body = 69.6*48.9/100;
 m_upper = 69.6*60.7/100; %頭部・胴体・上腕・前腕・手
-% 疑問点：質量比を足して100%にならない
 
 %% 足部と下腿の部分長(自分の長さ)
 len_foot = 25.5;
@@ -43,7 +42,6 @@ mc_forearm = len_forearm*cen_forearm; %上端から質量中心までの距離
 mc_hand = len_hand*cen_hand; %上端から質量中心までの距離
 mc_head = len_head*cen_head; %上端から質量中心までの距離
 mc_body = len_body*cen_body; %上端から質量中心までの距離
-% 問題点：原点をどこにするか
 
 %% 上半身の足から質量中心までの距離
 %上半身の質量中心では以下の仮定を置く
@@ -58,23 +56,25 @@ mc_upper = len_upper - (m_head*mc_head + m_body*(len_head+mc_body) - m_arm*(len_
 
 %% 関節の可動域
 % 関節角度は水平線からセグメントまでの角度
-theta_ank = 7/18*pi:1/180*pi:pi/2;
-theta_knee = pi/2:1/180*pi:23/18*pi;
-theta_hip = -7/36*pi:1/180*pi:pi/2;
+theta_ank = 70:1:90;
+theta_knee = 90:1:220;
+theta_hip = -35:1:105;
 
 %% 各関節角度に対する各セグメントの質量中心の座標
 g_all = zeros(length(theta_ank)*length(theta_knee)*length(theta_hip),9);
-col = 0;
 % gは順番に(足関節角度 膝関節角度 股関節角度 下腿の質量中心のx座標 下腿の質量中心のy座標 大腿の質量中心のx座標 大腿の質量中心のy座標 上体の質量中心のx座標 上体の質量中心のy座標)
 for i = 1:length(theta_ank)
-    x_low = mc_low * sin(theta_ank(i)); %下腿の質量中心のx座標を(下腿の長さ)*sinθで計算
-    y_low = mc_low * cos(theta_ank(i)); %下腿の質量中心のy座標を(下腿の長さ)*cosθで計算
+    ank = theta_ank(i)/180*pi;
+    x_low = mc_low*cos(ank); %下腿の質量中心のx座標を(下腿の長さ)*sinθで計算
+    y_low = mc_low*sin(ank); %下腿の質量中心のy座標を(下腿の長さ)*cosθで計算
     for j = 1:length(theta_knee)
-        x_femur = len_low*cos(theta_ank(i)) + mc_femur*cos(theta_knee(j));
-        y_femur = len_low*sin(theta_ank(i)) + mc_femur*sin(theta_knee(j));
+        knee = theta_knee(j)/180*pi;
+        x_femur = len_low*cos(ank) + mc_femur*cos(knee);
+        y_femur = len_low*sin(ank) + mc_femur*sin(knee);
         for k = 1:length(theta_hip)
-            x_upper = len_low*cos(theta_ank(i)) + len_femur*cos(theta_knee(j))+ mc_upper*cos(theta_hip(k));
-            y_upper = len_low*sin(theta_ank(i)) + len_femur*sin(theta_knee(j))+ mc_upper*sin(theta_hip(k));
+            hip = theta_hip(k)/180*pi;
+            x_upper = len_low*cos(ank) + len_femur*cos(knee)+ mc_upper*cos(hip);
+            y_upper = len_low*sin(ank) + len_femur*sin(knee)+ mc_upper*sin(hip);
             col = col+1;
             g_all(col,:) = [theta_ank(i) theta_knee(j) theta_hip(k) x_low y_low x_femur y_femur x_upper y_upper];
         end
@@ -98,7 +98,7 @@ for m = 1:length(theta_ank)*length(theta_knee)*length(theta_hip)
         squat_position(m,:) = g(m,:);
     end
 end
-for m = 1:length(theta_ank)*length(theta_knee)*length(theta_hip)
+for m = length(theta_ank)*length(theta_knee)*length(theta_hip):-1:1
     if squat_position(m,4) == 0 && squat_position(m,5) == 0
         squat_position(m,:) = [];
     end
