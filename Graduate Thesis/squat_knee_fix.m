@@ -102,28 +102,45 @@ for m = length(theta_ank)*length(theta_hip):-1:1
     end 
 end
 
-%% 各関節角度に対するプロット用の座標
+%% 関節トルクを求めるにあたっての初期値
+m_body = 69.6;
+g = 9.80;
+%% 各姿勢における足関節トルクの計算
 sz = size(squat_position);
-squat_plot_x = zeros(sz(1),6);
-squat_plot_y = zeros(sz(1),6);
-% squat_plotは順番に(かかと　つま先　足関節　膝関節　股関節　頭)
+theta_fground = zeros(sz(1),2);
+% theta_fground は順番に(cosθ sinθ) θはその姿勢における床反力の床からの角度
 for n = 1:sz(1)
-    knee = [len_low*cos(squat_position(n,1)/180*pi) len_low*sin(squat_position(n,1)/180*pi)];
-    hip = [knee(1,1)+len_femur*cos(squat_position(n,2)/180*pi) knee(1,2)+len_femur*sin(squat_position(n,2)/180*pi)];
-    head = [hip(1,1)+len_upper*cos(squat_position(n,3)/180*pi) hip(1,2)+len_upper*sin(squat_position(n,3)/180*pi)];
-    squat_plot_x(n,:) = [-6.5 19 0 knee(1,1) hip(1,1) head(1,1)];
-    squat_plot_y(n,:) = [0 0 0 knee(1,2) hip(1,2) head(1,2)];
+    theta_fground(n,1) = squat_position(n,4)/sqrt(squat_position(n,4)^2+squat_position(n,5)^2);
+    theta_fground(n,2) = squat_position(n,5)/sqrt(squat_position(n,4)^2+squat_position(n,5)^2);
 end
+joint_force = zeros(sz(1),2);
+% torque_ankle は順番に(足関節のトルクのx成分　足関節のトルクのy成分)
+for n = 1:sz(1)
+    joint_force(n,1) = m_body*g*theta_fground(n,1);
+    joint_force(n,2) = m_foot*g - m_body*g*theta_fground(n,2);
+end
+%% 各関節角度に対するプロット用の座標
+%sz = size(squat_position);
+%squat_plot_x = zeros(sz(1),6);
+%squat_plot_y = zeros(sz(1),6);
+%squat_plotは順番に(かかと　つま先　足関節　膝関節　股関節　頭)
+%for n = 1:sz(1)
+%    knee = [len_low*cos(squat_position(n,1)/180*pi) len_low*sin(squat_position(n,1)/180*pi)];
+%    hip = [knee(1,1)+len_femur*cos(squat_position(n,2)/180*pi) knee(1,2)+len_femur*sin(squat_position(n,2)/180*pi)];
+%    head = [hip(1,1)+len_upper*cos(squat_position(n,3)/180*pi) hip(1,2)+len_upper*sin(squat_position(n,3)/180*pi)];
+%    squat_plot_x(n,:) = [-6.5 19 0 knee(1,1) hip(1,1) head(1,1)];
+%    squat_plot_y(n,:) = [0 0 0 knee(1,2) hip(1,2) head(1,2)];
+%end
 
 %% プロット
-for o = 1:sz(1)
-    figure(1)
-    hold on
-    plot([squat_plot_x(o,1) squat_plot_x(o,2)], [squat_plot_y(o,1) squat_plot_y(o,2)], '-ok');
-    plot([squat_plot_x(o,3) squat_plot_x(o,4)], [squat_plot_y(o,3) squat_plot_y(o,4)],'-ok');
-    plot([squat_plot_x(o,4) squat_plot_x(o,5)], [squat_plot_y(o,4) squat_plot_y(o,5)],'-ok');
-    plot([squat_plot_x(o,5) squat_plot_x(o,6)], [squat_plot_y(o,5) squat_plot_y(o,6)],'-ok');
+%for o = 1:sz(1)
+%    figure(1)
+%    hold on
+%    plot([squat_plot_x(o,1) squat_plot_x(o,2)], [squat_plot_y(o,1) squat_plot_y(o,2)], '-ok');
+%    plot([squat_plot_x(o,3) squat_plot_x(o,4)], [squat_plot_y(o,3) squat_plot_y(o,4)],'-ok');
+%    plot([squat_plot_x(o,4) squat_plot_x(o,5)], [squat_plot_y(o,4) squat_plot_y(o,5)],'-ok');
+%    plot([squat_plot_x(o,5) squat_plot_x(o,6)], [squat_plot_y(o,5) squat_plot_y(o,6)],'-ok');
     %filename = join(string([squat_position(1,1:3)]),'_');
     %saveas(gcf, 'filename');
     %hold off
-end
+%end
