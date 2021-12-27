@@ -1,3 +1,5 @@
+close all;
+clear;
 %% 足部と下腿の質量を決定(論文1の体重を利用)
 m_foot = 69.6*1.1/100;
 m_low = 69.6*5.1/100;
@@ -58,94 +60,95 @@ mc_upper = len_upper - (m_head*mc_head + m_body*(len_head+mc_body) - m_arm*(len_
 
 %% 関節の可動域
 % 関節角度は水平線からセグメントまでの角度
-theta_ank = 7/18*pi:1/180*pi:pi/2;
-theta_knee = 2/3*pi;
-theta_hip = -7/36*pi:1/180*pi:pi/2;
+theta_ank = deg2rad(70:90);
+theta_hip = deg2rad(-35:90);
 
 %% 各関節角度に対する各セグメントの質量中心の座標
-g_all = zeros(length(theta_ank)*length(theta_hip),9);
+angle1 = NaN(length(theta_ank)*length(theta_hip),3);
+com = NaN(length(theta_ank)*length(theta_hip),6);
 col = 0;
-% gは順番に(足関節角度 股関節角度 膝関節角度 下腿の質量中心のx座標 下腿の質量中心のy座標 大腿の質量中心のx座標 大腿の質量中心のy座標 上体の質量中心のx座標 上体の質量中心のy座標)
+% comは質量中心を表して順番に(下腿質量中心のx 下腿質量中心のy 大腿質量中心のx 大腿質量中心のy 上体質量中心のx 上体質量中心のy)
+% angle1は設定した関節角度全ての姿勢における(足関節角度 股関節角度 膝関節角度)
 for i = 1:length(theta_ank)
     x_low = mc_low*cos(theta_ank(i)); %下腿の質量中心のx座標を(下腿の長さ)*sinθで計算
     y_low = mc_low*sin(theta_ank(i)); %下腿の質量中心のy座標を(下腿の長さ)*cosθで計算
-    x_femur = len_low*cos(theta_ank(i)) + mc_femur*cos(theta_knee);
-    y_femur = len_low*sin(theta_ank(i)) + mc_femur*sin(theta_knee);
+    x_femur = len_low*cos(theta_ank(i)) + mc_femur*cos(pi);
+    y_femur = len_low*sin(theta_ank(i)) + mc_femur*sin(pi);
     for k = 1:length(theta_hip)
-        x_upper = len_low*cos(theta_ank(i)) + len_femur*cos(theta_knee)+ mc_upper*cos(theta_hip(k));
-        y_upper = len_low*sin(theta_ank(i)) + len_femur*sin(theta_knee)+ mc_upper*sin(theta_hip(k));
+        x_upper = len_low*cos(theta_ank(i)) + len_femur*cos(pi)+ mc_upper*cos(theta_hip(k));
+        y_upper = len_low*sin(theta_ank(i)) + len_femur*sin(pi)+ mc_upper*sin(theta_hip(k));
         col = col+1;
-        g_all(col,:) = [theta_ank(i)*180/pi theta_knee*180/pi theta_hip(k)*180/pi x_low y_low x_femur y_femur x_upper y_upper];
+        angle1(col,:) = [theta_ank(i) theta_ank(i) theta_hip(k)];
+        com(col,:) = [x_low y_low x_femur y_femur x_upper y_upper];
     end
 end
 
 %% 各関節角度に対する重心座標
-gbody = zeros(length(theta_ank)*length(theta_hip),5);
-% gは順番に(足関節角度 膝関節角度 股関節角度 重心のx座標 重心のy座標)
+cog1 = NaN(length(theta_ank)*length(theta_hip),2);
+% cog1は設定した関節角度全てにおける重心を表して順番に(重心のx座標 重心のy座標)
 for l = 1:length(theta_ank)*length(theta_hip)
-    x_g = (m_foot*mc_foot_x + m_low*g_all(l,4) + m_femur*g_all(l,6) + m_upper*g_all(l,8))/(m_foot+m_low+m_femur+m_upper);
-    y_g = (m_foot*mc_foot_y + m_low*g_all(l,5) + m_femur*g_all(l,7) + m_upper*g_all(l,9))/(m_foot+m_low+m_femur+m_upper);
-    gbody(l,:) = [g_all(l,1) g_all(l,2) g_all(l,3) x_g y_g];
+    x_g = (m_foot*mc_foot_x + m_low*com(l,1) + m_femur*com(l,3) + m_upper*com(l,5))/(m_foot+m_low+m_femur+m_upper);
+    y_g = (m_foot*mc_foot_y + m_low*com(l,2) + m_femur*com(l,4) + m_upper*com(l,6))/(m_foot+m_low+m_femur+m_upper);
+    cog1(l,:) = [x_g y_g];
 end 
 
 %% 重心が足関節内にあるかの判定
-squat_position = zeros(length(theta_ank)*length(theta_hip),5);
-% squat_positionは順番に(足関節角度 膝関節角度 股関節角度 重心のx座標 重心のy座標)
-for m = 1:length(theta_ank)*length(theta_hip)
-    if gbody(m,4) < 19 && gbody(m,4) > -6.5 && gbody(m,5)> 0
-        squat_position(m,:) = gbody(m,:);
-    end
-end
-for m = length(theta_ank)*length(theta_hip):-1:1
-    if squat_position(m,4) == 0 && squat_position(m,5) == 0
-        squat_position(m,:) = [];
-    end 
-end
+cog2 = NaN(length(theta_ank)*length(theta_hip),2);
+angle2 = NaN(length(theta_ank)*length(theta_hip),2);
+% cog2は重心が基底面内にある姿勢の重心を表して順番に(重心のx座標 重心のy座標)
+% angle2は重心が基底面内にある姿勢の関節角度
+
+out_cog1 = (cog1(:,1) < 19).*(cog1(:,1) > -6.5);
+ok_indexes1 = find(out_cog1);
+cog2 = cog1(ok_indexes1,:);
+angle2 = angle1(ok_indexes1,:);
+
+scatter(angle2(:,1)./pi.*180, angle2(:,3)./pi.*180)
+xlabel('ankle joint angle')
+ylabel('hip joint angle')
 
 %% 関節トルクを求めるにあたっての初期値
 m_body = 69.6;
 g = -9.80;
 
 %% 各姿勢における足関節トルクの計算
-sz = size(squat_position);
-fground = zeros(sz(1),5);
-% fground は順番に(足関節角度 膝関節角度 股関節角度 床反力のx成分 床反力のy成分) θはその姿勢における床反力の床からの角度
-vector_fground = 0;
+sz = size(cog2);
+fground = NaN(sz(1),2);
+% fground は順番に(床反力のx成分 床反力のy成分) θはその姿勢における床反力の床からの角度
+% vector_fground = 0;
 % vector_fground は床反力の原点に対する位置ベクトルを表す
 for n = 1:sz(1)
-    fground(n,1:3) = squat_position(n,1:3);
     % vector_fground = [squat_position(n,4) squat_position(n,5)];
     % cos_theta = dot(vector_fground,[19 0]) / (norm(vector_fground)*norm([19 0]));
     % fground(n,4) = acos(cos_theta);
-    fground(n,4) = 0;
-    fground(n,5) = m_body*g;
+    fground(n,1) = 0;
+    fground(n,2) = -m_body*g;
 end
-fjoint_ankle = zeros(sz(1),7);
-% joint_force_ankle は順番に(足関節角度 膝関節角度 股関節角度 足関節間力のx成分　足関節間力のy成分 重心→足関節ベクトルx 重心→足関節ベクトルy)
+f_ankle = NaN(sz(1),4);
+% joint_force_ankle は順番に(足関節間力のx成分　足関節間力のy成分 重心→足関節ベクトルx 重心→足関節ベクトルy)
 % 関節間力のx成分は (-床反力のx成分)　で計算
 % 関節間力のy成分は (-床反力のy成分-重力) で計算
 for n = 1:sz(1)
-    fjoint_ankle(n,1:3) = fground(n,1:3);
-    fjoint_ankle(n,4) = -fground(n,4);
-    fjoint_ankle(n,5) = - -m_foot*g - fground(n,5);
-    fjoint_ankle(n,6:7) = [0-mc_foot_x 0];
+    f_ankle(n,1) = -fground(n,1);
+    f_ankle(n,2) = - -m_foot*g - fground(n,2);
+    f_ankle(n,3:4) = [0-mc_foot_x 0];
 end
 pre_moment1 = zeros(sz(1),6);
 % preparation_moment1 は床反力のモーメントの力、重心からの距離のx,y,z成分を順番に並べたもの
 for n = 1:sz(1)
-    pre_moment1(n,1:3) = [fground(n,4) fground(n,5) 0];
-    pre_moment1(n,4:6) = [19-mc_foot_x 0 0];
+    pre_moment1(n,1:3) = [fground(n,1) fground(n,2) 0];
+    pre_moment1(n,4:6) = [cog2(n,1) 0 0];
 end
 pre_moment2 = zeros(sz(1),6);
 % preparation_moment2 は足関節間力のモーメントの力、重心からの距離のx,y,z成分を順番に並べたもの
 for n = 1:sz(1)
-    pre_moment2(n,1:3) = [fjoint_ankle(n,4) fjoint_ankle(n,5) 0];
+    pre_moment2(n,1:3) = [f_ankle(n,1) f_ankle(n,2) 0];
     pre_moment2(n,4:6) = [0-mc_foot_x 0 0];
 end
 torque_ankle = zeros(sz(1),4);
 % torque_ankle は順番に(足関節角度 膝関節角度 股関節角度 トルク)
 for n = 1:sz(1)
-    torque_ankle(n,1:3) = fjoint_ankle(n,1:3);
+    torque_ankle(n,1:3) = f_ankle(n,1:3);
     moment1 = cross(pre_moment1(n,1:3), pre_moment1(n,4:6));
     moment2 = cross(pre_moment2(n,1:3), pre_moment2(n,4:6));
     torque_ankle(n,4) = -(moment1(1,3)+moment2(1,3));
@@ -158,7 +161,7 @@ fjoint_ankle2 = zeros(sz(1), 6);
 fjoint_knee = zeros(sz(1),5);
 % joint_force_knee は順番に(足関節角度 膝関節角度 股関節角度 足関節間力のx成分　足関節間力のy成分)
 for n = 1:sz(1)
-    fjoint_knee(n,1:3) = fjoint_ankle(n,1:3);
+    fjoint_knee(n,1:3) = f_ankle(n,1:3);
     fjoint_knee(n,4) = 0;
     fjoint_knee(n,5) = 0;
 end
