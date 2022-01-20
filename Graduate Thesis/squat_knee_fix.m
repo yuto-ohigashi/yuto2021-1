@@ -190,8 +190,8 @@ pre_momenta2 = NaN(sz1(1),6);
 pre_momenta2(:,1) = fankle1(1);
 pre_momenta2(:,2) = fankle1(2);
 pre_momenta2(:,3) = 0;
-pre_momenta2(:,4) = mc_foot_x-0;
-pre_momenta2(:,5) = mc_foot_y-0;
+pre_momenta2(:,4) = mc_foot_x;
+pre_momenta2(:,5) = mc_foot_y;
 pre_momenta2(:,6) = 0;
 % pre_momenta2 は足部にかかる足関節間力のモーメントの力、セグメント重心からの距離のx,y,z成分を順番に並べたもの
 momenta1 = cross(pre_momenta1(:,1:3), pre_momenta1(:,4:6));
@@ -227,7 +227,7 @@ pre_momentk2(:,6) = 0;
 % pre_momentk2 は下腿にかかる膝関節間力のモーメントの力、下腿重心からの距離のx,y,z成分を順番に並べたもの   
 momentk1 = cross(pre_momentk1(:,1:3), pre_momentk1(:,4:6));
 momentk2 = cross(pre_momentk2(:,1:3), pre_momentk2(:,4:6));
-torque_knee = -(momentk1(:,3)+momentk2(:,3));
+torque_knee = -(momentk1(:,3)+momentk2(:,3)-torque_ankle);
 % momentk1 は足関節間力のモーメント、momentk2 は膝関節間力のモーメント
 
 %% 各姿勢における股関節トルクの計算
@@ -238,7 +238,7 @@ fhip1(:,1) = -fknee2(:,1);
 fhip1(:,2) = -fknee2(:,2)-m_femur*g;
 % fhip1 は順番に(股関節間力のx成分　股関節間力のy成分)
 % 股関節間力のx成分は (-大腿への膝関節間力) で計算
-% 股関節間力のy成分は (-大腿への膝関節感力-大腿にかかる重力) で計算
+% 股関節間力のy成分は (-大腿への膝関節間力-大腿にかかる重力) で計算
 pre_momenth1 = NaN(sz1(1),6);
 pre_momenth1(:,1) = fknee2(:,1);
 pre_momenth1(:,2) = fknee2(:,2);
@@ -257,7 +257,7 @@ pre_momenth2(:,6) = 0;
 % pre_momenth2 は大腿にかかる股関節間力のモーメントの力、大腿重心からの距離のx,y,z成分を順番に並べたもの
 momenth1 = cross(pre_momenth1(:,1:3), pre_momenth1(:,4:6));
 momenth2 = cross(pre_momenth2(:,1:3), pre_momenth2(:,4:6));
-torque_hip = -(momenth1(:,3)+momenth2(:,3));
+torque_hip = -(momenth1(:,3)+momenth2(:,3)-torque_knee);
 % momentk1 は足関節間力のモーメント、momentk2 は膝関節間力のモーメント
 
 %% 股関節トルクの確認
