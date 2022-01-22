@@ -53,7 +53,7 @@ cen_forearm = 0.415;
 cen_hand = 0.891;
 cen_head = 0.821;
 cen_body = 0.493;
-cen_bar = 0.4; %肩からバーまでの比を表す
+cen_bar = 0.2; %肩からバーまでの比を表す
 
 %% セグメントの質量中心までの距離(直立時の距骨と脛骨の接合部(くるぶし？自分の長さ)を原点Oとした座標)
 mc_foot_x = len_toe-(len_foot*cen_foot); %つま先からくるぶしまでの距離
@@ -92,13 +92,13 @@ col = 0;
 for i = 1:length(theta_ank)
     x_low = mc_low*cos(theta_ank(i)); %下腿の質量中心のx座標を(下腿の長さ)*sinθで計算
     y_low = mc_low*sin(theta_ank(i)); %下腿の質量中心のy座標を(下腿の長さ)*cosθで計算
-    x_femur = len_low*cos(theta_ank(i)) + mc_femur*cos(pi);
-    y_femur = len_low*sin(theta_ank(i)) + mc_femur*sin(pi);
+    x_femur = len_low*cos(theta_ank(i)) + mc_femur*cos(pi/4+theta_ank(i));
+    y_femur = len_low*sin(theta_ank(i)) + mc_femur*sin(pi/4+theta_ank(i));
     for j = 1:length(theta_hip)
-        x_upper = len_low*cos(theta_ank(i)) + len_femur*cos(pi)+ mc_upper*cos(theta_hip(j));
-        y_upper = len_low*sin(theta_ank(i)) + len_femur*sin(pi)+ mc_upper*sin(theta_hip(j));
+        x_upper = len_low*cos(theta_ank(i)) + len_femur*cos(pi/4+theta_ank(i))+ mc_upper*cos(theta_hip(j)-3*pi/4+theta_ank(i));
+        y_upper = len_low*sin(theta_ank(i)) + len_femur*sin(pi/4+theta_ank(i))+ mc_upper*sin(theta_hip(j)-3*pi/4+theta_ank(i));
         col = col+1;
-        angle1(col,:) = [theta_ank(i) theta_ank(i) theta_hip(j)];
+        angle1(col,:) = [theta_ank(i) 3*pi/4 theta_hip(j)];
         cos1(col,:) = [x_low y_low x_femur y_femur x_upper y_upper];
     end
 end
@@ -139,27 +139,27 @@ sz2 = size(out_angle2);
 %% スクワット姿勢として認められた姿勢のプロット用の座標
 % pknee,phip,phead は基底面内に重心がある姿勢の膝・股関節・頭の位置座標
 pknee1 = [(len_low.*cos(angle2(:,1))) (len_low.*sin(angle2(:,1)))];
-phip1 = [pknee1(:,1)+len_femur*cos(pi) pknee1(:,2)+len_femur*sin(pi)];
-phead1 = [phip1(:,1)+len_upper.*cos(angle2(:,3)) phip1(:,2)+len_upper.*sin(angle2(:,3))];
-pbar1 = [phip1(:,1)+len_body*(1-cen_bar).*cos(angle2(:,3)) phip1(:,2)+len_body*(1-cen_bar).*sin(angle2(:,3))];
+phip1 = [pknee1(:,1)+len_femur*cos(pi/4+angle2(:,1)) pknee1(:,2)+len_femur*sin(pi/4+angle2(:,1))];
+phead1 = [phip1(:,1)+len_upper.*cos(angle2(:,3)-3*pi/4+angle2(:,1)) phip1(:,2)+len_upper.*sin(angle2(:,3)-3*pi/4+angle2(:,1))];
+pbar1 = [phip1(:,1)+len_body*(1-cen_bar).*cos(angle2(:,3)-3*pi/4+angle2(:,1)) phip1(:,2)+len_body*(1-cen_bar).*sin(angle2(:,3)-3*pi/4+angle2(:,1))];
 
 %% スクワット姿勢として認められた姿勢のプロット
-% for m = 1:sz1(1)
-%     figure(3)
-%     hold on
-%     plot([len_toe -len_heel], [0 0], '-ok');
-%     plot([0 pknee1(m,1)], [0 pknee1(m,2)],'-ok');
-%     plot([pknee1(m,1) phip1(m,1)], [pknee1(m,2) phip1(m,2)],'-ok');
-%     plot([phip1(m,1) phead1(m,1)], [phip1(m,2) phead1(m,2)],'-ok');
-%     plot(cog2(m,1),cog2(m,2),'*');
-%     plot(pbar1(m,1),pbar1(m,2),'o','MarkerSize',10)
-% end
+for m = 1:sz1(1)
+    figure(3)
+    hold on
+    plot([len_toe -len_heel], [0 0], '-ok');
+    plot([0 pknee1(m,1)], [0 pknee1(m,2)],'-ok');
+    plot([pknee1(m,1) phip1(m,1)], [pknee1(m,2) phip1(m,2)],'-ok');
+    plot([phip1(m,1) phead1(m,1)], [phip1(m,2) phead1(m,2)],'-ok');
+    plot(cog2(m,1),cog2(m,2),'o');
+    plot(pbar1(m,1),pbar1(m,2),'ok','MarkerSize',10)
+end
 
 %% スクワット姿勢として排除された姿勢のプロット用の座標
 out_pknee1 = [(len_low.*cos(out_angle2(:,1))) (len_low.*sin(out_angle2(:,1)))];
-out_phip1 = [out_pknee1(:,1)+len_femur*cos(pi) out_pknee1(:,2)+len_femur*sin(pi)];
-out_phead1 = [out_phip1(:,1)+len_upper.*cos(out_angle2(:,3)) out_phip1(:,2)+len_upper.*sin(out_angle2(:,3))];
-out_pbar1 = [out_phip1(:,1)+len_body*(1-cen_bar).*cos(out_angle2(:,3)) out_phip1(:,2)+len_body*(1-cen_bar).*sin(out_angle2(:,3))];
+out_phip1 = [out_pknee1(:,1)+len_femur*cos(pi/4+out_angle2(:,1)) out_pknee1(:,2)+len_femur*sin(pi/4+out_angle2(:,1))];
+out_phead1 = [out_phip1(:,1)+len_upper.*cos(out_angle2(:,3)-3*pi/4+out_angle2(:,1)) out_phip1(:,2)+len_upper.*sin(out_angle2(:,3)-3*pi/4+out_angle2(:,1))];
+out_bar1 = [out_phip1(:,1)+len_body*(1-cen_bar).*cos(out_angle2(:,3)-3*pi/4+out_angle2(:,1)) out_phip1(:,2)+len_body*(1-cen_bar).*sin(out_angle2(:,3)-3*pi/4+out_angle2(:,1))];
 
 %% スクワット姿勢としてはじかれた姿勢のプロット
 % for n = 1:sz2(1)
@@ -334,3 +334,5 @@ torque_hip2 = torque_hip1(ok_indexes2,:);
 torque_ankle3 = torque_ankle1(out_indexes2,:);
 torque_knee3 = torque_knee1(out_indexes2,:);
 torque_hip3 = torque_hip1(out_indexes2,:);
+
+%% 

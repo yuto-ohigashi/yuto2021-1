@@ -28,15 +28,14 @@ m_upper = m_arm*2+m_head+m_body; %頭部・胴体・上腕・前腕・手
 
 %% 足部と下腿の部分長
 height = 1.751;
-len_foot = 0.152*height;
-len_ank = 0.039*height;
-len_low = 0.285*height;
-len_femur = 0.245*height;
-len_upperarm = 0.188*height;
+len_foot = 0.152*height; %足部の長さ
+len_low = 0.285*height; %下腿の長さ
+len_femur = 0.245*height; %大腿の長さ
+len_upperarm = 0.188*height; %前腕の長さ
 len_forearm = 0.145*height;
 len_hand = 0.108*height;
 len_head = 0.130*height;
-len_body = 0.345*height;
+len_body = 0.340*height;
 len_upper = len_head+len_body;
 len_toe = len_foot*0.6;
 len_heel = len_foot*0.4;
@@ -72,7 +71,7 @@ mc_body = len_body*cen_body; %上端から質量中心までの距離
 %以下は腕の質量中心、肩からの距離にしている
 mc_arm = (m_upperarm*mc_upperarm + m_forearm*(len_upperarm+mc_forearm) + m_hand*(len_upperarm+len_forearm+cen_hand))/m_arm;  
 %頭を原点に下方向が正で重心を出している、胴体と腕の質量中心までの距離は(肩から質量中心までの距離)+(頭の長さ)で出している
-mc_upper = len_upper - (m_head*mc_head + m_body*(len_head+mc_body) - m_arm*(len_head+mc_arm))/(m_head+m_body+m_arm); 
+mc_upper = len_upper - (m_head*mc_head+m_body*(len_head+mc_body)+m_arm*2*(len_head+mc_arm))/m_upper; 
 
 %% 関節の可動域
 % 関節角度は水平線からセグメントまでの角度
