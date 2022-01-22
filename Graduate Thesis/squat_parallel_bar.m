@@ -41,8 +41,8 @@ len_hand = 0.108*height;
 len_head = 0.130*height;
 len_body = 0.340*height;
 len_upper = len_head+len_body;
-len_toe = len_foot*0.6;
-len_heel = len_foot*0.4;
+len_toe = len_foot*0.55;
+len_heel = len_foot*0.45;
 
 %% 各セグメントの質量中心(直立時の距骨と脛骨の接合部(くるぶし？自分の長さ)を原点Oとした座標)、質量中心の位置は上端からの比
 cen_foot = 0.595;

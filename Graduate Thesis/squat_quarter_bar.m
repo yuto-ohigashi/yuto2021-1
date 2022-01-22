@@ -41,8 +41,8 @@ len_hand = 0.108*height;
 len_head = 0.130*height;
 len_body = 0.340*height;
 len_upper = len_head+len_body;
-len_toe = len_foot*0.6;
-len_heel = len_foot*0.4;
+len_toe = len_foot*0.55;
+len_heel = len_foot*0.45;
 
 %% 各セグメントの質量中心(直立時の距骨と脛骨の接合部(くるぶし？自分の長さ)を原点Oとした座標)、質量中心の位置は上端からの比
 cen_foot = 0.595;
@@ -144,16 +144,16 @@ phead1 = [phip1(:,1)+len_upper.*cos(angle2(:,3)-3*pi/4+angle2(:,1)) phip1(:,2)+l
 pbar1 = [phip1(:,1)+len_body*(1-cen_bar).*cos(angle2(:,3)-3*pi/4+angle2(:,1)) phip1(:,2)+len_body*(1-cen_bar).*sin(angle2(:,3)-3*pi/4+angle2(:,1))];
 
 %% スクワット姿勢として認められた姿勢のプロット
-for m = 1:sz1(1)
-    figure(3)
-    hold on
-    plot([len_toe -len_heel], [0 0], '-ok');
-    plot([0 pknee1(m,1)], [0 pknee1(m,2)],'-ok');
-    plot([pknee1(m,1) phip1(m,1)], [pknee1(m,2) phip1(m,2)],'-ok');
-    plot([phip1(m,1) phead1(m,1)], [phip1(m,2) phead1(m,2)],'-ok');
-    plot(cog2(m,1),cog2(m,2),'o');
-    plot(pbar1(m,1),pbar1(m,2),'ok','MarkerSize',10)
-end
+% for m = 1:sz1(1)
+%     figure(3)
+%     hold on
+%     plot([len_toe -len_heel], [0 0], '-ok');
+%     plot([0 pknee1(m,1)], [0 pknee1(m,2)],'-ok');
+%     plot([pknee1(m,1) phip1(m,1)], [pknee1(m,2) phip1(m,2)],'-ok');
+%     plot([phip1(m,1) phead1(m,1)], [phip1(m,2) phead1(m,2)],'-ok');
+%     plot(cog2(m,1),cog2(m,2),'o');
+%     plot(pbar1(m,1),pbar1(m,2),'ok','MarkerSize',10)
+% end
 
 %% スクワット姿勢として排除された姿勢のプロット用の座標
 out_pknee1 = [(len_low.*cos(out_angle2(:,1))) (len_low.*sin(out_angle2(:,1)))];
