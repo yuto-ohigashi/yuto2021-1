@@ -27,22 +27,22 @@ m_head = 69.6*6.9/100;
 m_body = 69.6*48.9/100;
 m_upper = m_arm*2+m_head+m_body; %頭部・胴体・上腕・前腕・手
 m_all = m_upper+m_lower;
-bar_index = 1; %重りが体重の何倍かを規定する
+bar_index = 2; %重りが体重の何倍かを規定する
 m_bar = m_all*bar_index;
 
 %% 足部と下腿の部分長
 height = 1.751;
-len_foot = 0.152*height; %足部の長さ
-len_low = 0.285*height; %下腿の長さ
-len_femur = 0.245*height; %大腿の長さ
+len_foot = 0.15*height; %足部の長さ
+len_low = 0.340*height; %下腿の長さ
+len_femur = 0.19*height; %大腿の長さ
 len_upperarm = 0.188*height; %前腕の長さ
 len_forearm = 0.145*height;
 len_hand = 0.108*height;
 len_head = 0.130*height;
 len_body = 0.340*height;
 len_upper = len_head+len_body;
-len_toe = len_foot*0.55;
-len_heel = len_foot*0.45;
+len_toe = len_foot*0.7;
+len_heel = len_foot*0.3;
 
 %% 各セグメントの質量中心(直立時の距骨と脛骨の接合部(くるぶし？自分の長さ)を原点Oとした座標)、質量中心の位置は上端からの比
 cen_foot = 0.595;
@@ -53,7 +53,7 @@ cen_forearm = 0.415;
 cen_hand = 0.891;
 cen_head = 0.821;
 cen_body = 0.493;
-cen_bar = 0.4; %肩からバーまでの比を表す
+cen_bar = 0.3; %肩からバーまでの比を表す
 
 %% セグメントの質量中心までの距離(直立時の距骨と脛骨の接合部(くるぶし？自分の長さ)を原点Oとした座標)
 mc_foot_x = len_toe-(len_foot*cen_foot); %つま先からくるぶしまでの距離
@@ -286,6 +286,7 @@ phip2 = phip1(ok_indexes2,:);
 phead2 = phead1(ok_indexes2,:);
 pbar2 = pbar1(ok_indexes2,:);
 
+% 膝がつま先よりも後ろにある場合の姿勢
 out_indexes2 = find(~outcog2);
 out_cog3 = cog2(out_indexes2,:);
 out_angle3 = angle2(out_indexes2,:);
@@ -336,18 +337,63 @@ torque_knee3 = torque_knee1(out_indexes2,:);
 torque_hip3 = torque_hip1(out_indexes2,:);
 
 %% 膝関節トルクの比較1
-figure(7)
-torque_knee4 = [torque_knee3 ; NaN(abs(sz3(1)-sz4(1)),1)];
-boxchart([torque_knee2 torque_knee4])
-xlabel("膝の位置");
-ylabel("膝関節トルク[N・m]");
-title("膝の位置ごとの膝関節発揮トルク");
+% figure(7)
+% torque_knee4 = [torque_knee3 ; NaN(abs(sz3(1)-sz4(1)),1)];
+% boxchart([torque_knee2 torque_knee4])
+% xlabel("膝の位置");
+% ylabel("膝関節トルク[N・m]");
+% title("膝の位置ごとの膝関節発揮トルク(パラレル)","バーの重さ=体重");
+% text(0.95,389,{append('n=', num2str(sz3(1)))});
+% text(1.95,358,{append('n=', num2str(sz4(1)))});
+% ylim([290 400])
 
 %% 股関節トルクの比較2
 figure(8)
 hold on
-scatter(pknee2(:,1),torque_knee2,'r')
-scatter(pknee3(:,1),torque_knee3,'b')
+scatter(pknee2(:,1),torque_knee2,'r') %膝が前に出ている姿勢のプロット(赤)
+scatter(pknee3(:,1),torque_knee3,'b') %膝が前に出ていない姿勢のプロット(青)
 xlabel("膝の足関節からの位置[m]");
 ylabel("膝関節トルク[N・m]");
-title("膝の位置ごとの膝関節発揮トルク");
+title("膝の位置ごとの膝関節発揮トルク(パラレル)","バーの重さ = 体重×2");
+
+%% スティックピクチャ左下
+pict_lb = [pknee3(end,:) phip3(end,:) phead3(end,:) pbar3(end,:)];
+figure(9)
+hold on
+plot([len_toe -len_heel],[0 0],'-k','LineWidth',10);
+plot([0 pict_lb(1)],[0 pict_lb(2)],'-ok','LineWidth',10);
+plot([pict_lb(1) pict_lb(3)],[pict_lb(2) pict_lb(4)],'-ok','LineWidth',10);
+plot([pict_lb(3) pict_lb(5)],[pict_lb(4) pict_lb(6)],'-k','LineWidth',10);
+plot(pict_lb(5),pict_lb(6),'ok','MarkerSize',100,'LineWidth',10)
+plot(pict_lb(7),pict_lb(8)+0.17,'ok','MarkerSize',50);
+plot([len_toe len_toe],[0 1.8],'-b')
+ylim([0 1.8])
+xlim([-0.4 0.5])
+
+%% スティックピクチャ右下
+pict_rb = [pknee2(1,:) phip2(1,:) phead2(1,:) pbar2(1,:)];
+figure(10)
+hold on
+plot([len_toe -len_heel],[0 0],'-k','LineWidth',10);
+plot([0 pict_rb(1)],[0 pict_rb(2)],'-ok','LineWidth',10);
+plot([pict_rb(1) pict_rb(3)],[pict_rb(2) pict_rb(4)],'-ok','LineWidth',10);
+plot([pict_rb(3) pict_rb(5)],[pict_rb(4) pict_rb(6)],'-k','LineWidth',10);
+plot(pict_rb(5),pict_rb(6),'ok','MarkerSize',100,'LineWidth',10)
+plot(pict_rb(7),pict_rb(8)+0.17,'ok','MarkerSize',50);
+plot([len_toe len_toe],[0 1.8],'-b')
+ylim([0 1.8])
+xlim([-0.4 0.5])
+
+%% スティックピクチャ右上
+pict_rt = [pknee2(31,:) phip2(31,:) phead2(31,:) pbar2(31,:)];
+figure(11)
+hold on
+plot([len_toe -len_heel],[0 0],'-k','LineWidth',10);
+plot([0 pict_rt(1)],[0 pict_rt(2)],'-ok','LineWidth',10);
+plot([pict_rt(1) pict_rt(3)],[pict_rt(2) pict_rt(4)],'-ok','LineWidth',10);
+plot([pict_rt(3) pict_rt(5)],[pict_rt(4) pict_rt(6)],'-k','LineWidth',10);
+plot(pict_rt(5),pict_rt(6),'ok','MarkerSize',100,'LineWidth',10)
+plot(pict_rt(7)-0.06,pict_rt(8),'ok','MarkerSize',50);
+plot([len_toe len_toe],[0 1.8],'-b')
+ylim([0 1.8])
+xlim([-0.4 0.5])
