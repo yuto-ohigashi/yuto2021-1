@@ -291,39 +291,39 @@ out_cog3 = cog2(out_indexes2,:);
 out_angle3 = angle2(out_indexes2,:);
 out_cos3 = cos2(out_indexes2,:);
 
-out_pknee2 = pknee1(out_indexes2,:);
-out_phip2 = phip1(out_indexes2,:);
-out_phead2 = phead1(out_indexes2,:);
-out_pbar2 = pbar1(out_indexes2,:);
+pknee3 = pknee1(out_indexes2,:);
+phip3 = phip1(out_indexes2,:);
+phead3 = phead1(out_indexes2,:);
+pbar3 = pbar1(out_indexes2,:);
 
 sz3 = size(ok_indexes2);
 sz4 = size(out_indexes2);
 
 %% 膝がつま先よりも前に出ている姿勢のプロット
-for m = 1:sz3(1)
-    figure(5)
-    hold on
-    plot([len_toe len_toe],[0 height], '-')
-    plot([len_toe -len_heel], [0 0], '-ok');
-    plot([0 pknee2(m,1)], [0 pknee2(m,2)],'-ok');
-    plot([pknee2(m,1) phip2(m,1)], [pknee2(m,2) phip2(m,2)],'-ok');
-    plot([phip2(m,1) phead2(m,1)], [phip2(m,2) phead2(m,2)],'-ok');
-    plot(cog3(m,1),cog3(m,2),'*');
-    plot(pbar2(m,1),pbar2(m,2),'o','MarkerSize',10)
-end
+% for m = 1:sz3(1)
+%     figure(5)
+%     hold on
+%     plot([len_toe len_toe],[0 height], '-')
+%     plot([len_toe -len_heel], [0 0], '-ok');
+%     plot([0 pknee2(m,1)], [0 pknee2(m,2)],'-ok');
+%     plot([pknee2(m,1) phip2(m,1)], [pknee2(m,2) phip2(m,2)],'-ok');
+%     plot([phip2(m,1) phead2(m,1)], [phip2(m,2) phead2(m,2)],'-ok');
+%     plot(cog3(m,1),cog3(m,2),'*');
+%     plot(pbar2(m,1),pbar2(m,2),'o','MarkerSize',10)
+% end
 
 %% 膝がつま先よりも前に出ていない姿勢のプロット
-for m = 1:sz4(1)
-    figure(6)
-    hold on
-    plot([len_toe len_toe],[0 height], '-')
-    plot([len_toe -len_heel], [0 0], '-ok');
-    plot([0 out_pknee2(m,1)], [0 out_pknee2(m,2)],'-ok');
-    plot([out_pknee2(m,1) out_phip2(m,1)], [out_pknee2(m,2) out_phip2(m,2)],'-ok');
-    plot([out_phip2(m,1) out_phead2(m,1)], [out_phip2(m,2) out_phead2(m,2)],'-ok');
-    plot(out_cog3(m,1),out_cog3(m,2),'*');
-    plot(out_pbar2(m,1),out_pbar2(m,2),'o','MarkerSize',10)
-end
+% for m = 1:sz4(1)
+%     figure(6)
+%     hold on
+%     plot([len_toe len_toe],[0 height], '-')
+%     plot([len_toe -len_heel], [0 0], '-ok');
+%     plot([0 pknee3(m,1)], [0 pknee3(m,2)],'-ok');
+%     plot([pknee3(m,1) phip3(m,1)], [pknee3(m,2) phip3(m,2)],'-ok');
+%     plot([phip3(m,1) phead3(m,1)], [phip3(m,2) phead3(m,2)],'-ok');
+%     plot(out_cog3(m,1),out_cog3(m,2),'*');
+%     plot(pbar3(m,1),pbar3(m,2),'o','MarkerSize',10)
+% end
 
 %% 膝がつま先よりも前に出ている姿勢の膝関節トルク
 torque_ankle2 = torque_ankle1(ok_indexes2,:);
@@ -335,4 +335,19 @@ torque_ankle3 = torque_ankle1(out_indexes2,:);
 torque_knee3 = torque_knee1(out_indexes2,:);
 torque_hip3 = torque_hip1(out_indexes2,:);
 
-%% 
+%% 膝関節トルクの比較1
+figure(7)
+torque_knee4 = [torque_knee2 ; NaN(abs(sz3(1)-sz4(1)),1)];
+boxchart([torque_knee4 torque_knee3])
+xlabel("膝の位置");
+ylabel("膝関節トルク[N・m]");
+title("膝の位置ごとの膝関節発揮トルク");
+
+%% 股関節トルクの比較2
+figure(8)
+hold on
+scatter(pknee2(:,1),torque_knee2,'r')
+scatter(pknee3(:,1),torque_knee3,'b')
+xlabel("膝の足関節からの位置[m]");
+ylabel("膝関節トルク[N・m]");
+title("膝の位置ごとの膝関節発揮トルク");
